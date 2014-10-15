@@ -6,6 +6,7 @@ import ConfigParser
 import time
 import json 
 from pprint import pprint 
+import argparse
 
 def process(type, backup):
 
@@ -77,7 +78,9 @@ def process(type, backup):
             #result = urlObj.readlines()
             #for line in result:
             #    print line
-    else:
-        print "please pass the first argument as either restore or backup"
 
-process(sys.argv[1], sys.argv[2])
+parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list')
+parser.add_argument('--type', choices=['backup', 'restore'])
+parser.add_argument('file', help='If backup; The file to save. If restore: The file to restore from')
+args = parser.parse_args()
+process(args.type, args.file)
