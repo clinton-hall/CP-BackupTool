@@ -80,7 +80,7 @@ def process(type, backup):
             #    print line
 
 parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list')
-parser.add_argument('--type', choices=['backup', 'restore'])
+parser.add_argument('--type', choices=['backup', 'restore'], required=True)
 parser.add_argument('file', help='If backup; The file to save. If restore: The file to restore from')
 args = parser.parse_args()
 process(args.type, args.file)
