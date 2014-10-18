@@ -41,12 +41,8 @@ def process(type, backup):
         protocol = "http://"
     
     if type == "backup":
-
         url = protocol + host + ":" + port + web_root + "/api/" + apikey + "/" + "movie.list/?status=active"
-
-        
         print "Opening URL:", url
-    
         try:
             urlObj = urllib.urlopen(url)
         except IOError, e:
@@ -69,15 +65,11 @@ def process(type, backup):
         for imdb in imdb_list:
             url = baseurl + imdb
             print "Opening URL:", url
-    
             try:
                 urlObj = urllib.urlopen(url)
             except IOError, e:
                 print "Unable to open URL: ", str(e)
                 sys.exit(1)
-            #result = urlObj.readlines()
-            #for line in result:
-            #    print line
 
 parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list')
 parser.add_argument('--type', choices=['backup', 'restore'], required=True)
