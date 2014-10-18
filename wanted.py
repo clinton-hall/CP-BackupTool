@@ -74,9 +74,12 @@ def process(type, backup):
                 print "Unable to open URL: ", str(e)
                 sys.exit(1)
 
-parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list')
-parser.add_argument('--type', choices=['backup', 'restore'], required=True)
-parser.add_argument('file', help='If backup; The file to save. If restore: The file to restore from')
-parser.add_argument('--cfg', help='Specify an alternative cfg file')
+parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list',
+                                formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument('--type', metavar='backup/restore', choices=['backup', 'restore'], required=True,
+                    help='')
+parser.add_argument('file', help='''If backup: The file to save the wanted list to.
+If restore: The file to restore from.''')
+parser.add_argument('--cfg', metavar='cfg-file', help='Specify an alternative cfg file')
 args = parser.parse_args()
 process(args.type, args.file)
