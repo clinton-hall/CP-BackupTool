@@ -11,7 +11,10 @@ import argparse
 def process(type, backup):
 
     config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "couch.cfg")
+    if args.cfg:
+        configFilename = args.cfg 
+    else:
+        configFilename = os.path.join(os.path.dirname(sys.argv[0]), "couch.cfg")
     print "Loading config from", configFilename
     
     if not os.path.isfile(configFilename):
@@ -74,5 +77,6 @@ def process(type, backup):
 parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list')
 parser.add_argument('--type', choices=['backup', 'restore'], required=True)
 parser.add_argument('file', help='If backup; The file to save. If restore: The file to restore from')
+parser.add_argument('--cfg', help='Specify an alternative cfg file')
 args = parser.parse_args()
 process(args.type, args.file)
