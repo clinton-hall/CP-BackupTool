@@ -18,7 +18,7 @@ def process(type, backup):
     print "Loading config from", configFilename
     
     if not os.path.isfile(configFilename):
-        print "ERROR: You need an couch.cfg file."
+        print "ERROR: You need a config file."
         sys.exit(-1)
     
     config.read(configFilename)
