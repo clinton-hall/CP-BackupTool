@@ -8,14 +8,14 @@ After cloning this repo you need to edit the couch.cfg to add your correct host,
 ###### Backup
 To create a backup of your wanted movies, run the script passing in the options "backup" and the full path/name of the backup file you want to create
 ```
-./wanted.py backup /volume1/Public/backup.txt
+./wanted.py --type backup /volume1/Public/backup.txt
 ```
 
 ###### Restore
 Now, should your database need to be deleted, or is otherwise lost, set up the quality profiles, do a full manage scan (to make sure we don't add and snatch movies that were already downloaded since your last backup) and then run this script with the option "restore" followed by the path to the backup file.
 (NOTE: If you did a complete re-install, you will need to enter the NEW api key in the couch.cfg)
 ```
-./wanted.py restore /volume1/Public/backup.txt
+./wanted.py --type restore /volume1/Public/backup.txt
 ```
 
 This doesn't assign a specific quality or category... you will need to manually edit these in the wanted list.

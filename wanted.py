@@ -6,15 +6,19 @@ import ConfigParser
 import time
 import json 
 from pprint import pprint 
+import argparse
 
 def process(type, backup):
 
     config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "couch.cfg")
+    if args.cfg:
+        configFilename = args.cfg 
+    else:
+        configFilename = os.path.join(os.path.dirname(sys.argv[0]), "couch.cfg")
     print "Loading config from", configFilename
     
     if not os.path.isfile(configFilename):
-        print "ERROR: You need an couch.cfg file."
+        print "ERROR: You need a config file."
         sys.exit(-1)
     
     config.read(configFilename)
@@ -40,12 +44,8 @@ def process(type, backup):
         protocol = "http://"
     
     if type == "backup":
-
         url = protocol + host + ":" + port + web_root + "/api/" + apikey + "/" + "movie.list/?status=active"
-
-        
         print "Opening URL:", url
-    
         try:
             urlObj = urllib.urlopen(url)
         except IOError, e:
@@ -68,16 +68,18 @@ def process(type, backup):
         for imdb in imdb_list:
             url = baseurl + imdb
             print "Opening URL:", url
-    
             try:
                 urlObj = urllib.urlopen(url)
             except IOError, e:
                 print "Unable to open URL: ", str(e)
                 sys.exit(1)
-            #result = urlObj.readlines()
-            #for line in result:
-            #    print line
-    else:
-        print "please pass the first argument as either restore or backup"
 
-process(sys.argv[1], sys.argv[2])
+parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list',
+                                formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument('--type', metavar='backup/restore', choices=['backup', 'restore'], required=True,
+                    help='')
+parser.add_argument('file', help='''If backup: The file to save the wanted list to.
+If restore: The file to restore from.''')
+parser.add_argument('--cfg', metavar='cfg-file', help='Specify an alternative cfg file')
+args = parser.parse_args()
+process(args.type, args.file)
