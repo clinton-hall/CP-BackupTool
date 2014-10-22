@@ -57,14 +57,14 @@ def process(type, backup):
         result = json.load(urlObj)
         imdb_list = [ item["info"]["imdb"] for item in result["movies"] if 'info' in item and 'imdb' in item["info"] ]
 
-        f = open(backup, 'w')
-        for imdb in imdb_list:
-            f.write(imdb +'\n')
+        with open(backup, 'w') as f:
+            for imdb in imdb_list:
+                f.write(imdb +'\n')
         f.close()
 
     elif type == "restore":
-        f = open(backup, 'r')
-        imdb_list = [ line.strip() for line in f ]
+        with open(backup, 'r') as f:
+            imdb_list = [ line.strip() for line in f ]
         f.close()
         baseurl = protocol + host + ":" + port + web_root + "/api/" + apikey + "/" + "movie.add/?identifier="
         for imdb in imdb_list:
