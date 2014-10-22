@@ -26,6 +26,8 @@ def process(type, backup):
     host = config.get("CouchPotato", "host")
     port = config.get("CouchPotato", "port")
     apikey = config.get("CouchPotato", "apikey")
+    if not apikey:
+        raise ValueError("No apikey specified in %s" % configFilename)
 
     try:
         ssl = int(config.get("CouchPotato", "ssl"))
