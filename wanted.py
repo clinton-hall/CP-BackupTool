@@ -78,8 +78,9 @@ def process(type, backup):
 
 parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list',
                                 formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('--type', metavar='backup/restore', choices=['backup', 'restore'], required=True,
-                    help='')
+# Require this option
+parser.add_argument('--type', metavar='backup/restore', choices=['backup', 'restore'],
+                    required=True, help='')
 parser.add_argument('file', help='''If backup: The file to save the wanted list to.
 If restore: The file to restore from.''')
 parser.add_argument('--cfg', metavar='cfg-file', help='Specify an alternative cfg file')
