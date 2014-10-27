@@ -9,20 +9,16 @@ from pprint import pprint
 import argparse
 
 def process(type, backup):
-
     config = ConfigParser.ConfigParser()
     if args.cfg:
         configFilename = args.cfg 
     else:
         configFilename = os.path.join(os.path.dirname(sys.argv[0]), "couch.cfg")
+
     print "Loading config from", configFilename
-    
-    if not os.path.isfile(configFilename):
-        print "ERROR: You need a config file."
-        sys.exit(-1)
-    
-    config.read(configFilename)
-    
+    with open(configFilename, "r") as conf:
+        config.readfp(conf)
+
     host = config.get("CouchPotato", "host")
     port = config.get("CouchPotato", "port")
     apikey = config.get("CouchPotato", "apikey")
