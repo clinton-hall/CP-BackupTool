@@ -8,26 +8,35 @@ import json
 from pprint import pprint 
 import argparse
 
-def process(type, backup):
+# Validate mandatory values
+def validateConf(config, section):
+    config_list = config.items(section)
+    for item in config_list:
+        if item[0] == 'host' and not item[1]:
+            raise ValueError("'%s' can't be empty in cfg" % item[0])
+        elif item[0] == 'port' and not item[1]:
+            raise ValueError("'%s' can't be empty in cfg" % item[0])
+        elif item[0] == 'apikey' and not item[1]:
+            raise ValueError("'%s' can't be empty in cfg" % item[0])
 
+def process(type, backup):
     config = ConfigParser.ConfigParser()
     if args.cfg:
         configFilename = args.cfg 
     else:
         configFilename = os.path.join(os.path.dirname(sys.argv[0]), "couch.cfg")
+
     print "Loading config from", configFilename
-    
-    if not os.path.isfile(configFilename):
-        print "ERROR: You need a config file."
-        sys.exit(-1)
-    
-    config.read(configFilename)
-    
+    with open(configFilename, "r") as conf:
+        config.readfp(conf)
+
+    # Validate config
+    validateConf(config, "CouchPotato")
+
     host = config.get("CouchPotato", "host")
-    port = config.get("CouchPotato", "port")
+    # Must be an INT
+    port = config.getint("CouchPotato", "port")
     apikey = config.get("CouchPotato", "apikey")
-    if not apikey:
-        raise ValueError("No apikey specified in %s" % configFilename)
 
     try:
         ssl = int(config.get("CouchPotato", "ssl"))
@@ -46,7 +55,7 @@ def process(type, backup):
         protocol = "http://"
     
     if type == "backup":
-        url = protocol + host + ":" + port + web_root + "/api/" + apikey + "/" + "movie.list/?status=active"
+        url = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.list/?status=active"
         print "Opening URL:", url
         try:
             urlObj = urllib.urlopen(url)
