@@ -12,7 +12,7 @@ import argparse
 def validateConf(config, section, confFile):
     default_host = 'localhost'
     default_port = 5050
-    default_ssl = 0
+    default_ssl = "off"
     config_list = config.items(section)
     for item in config_list:
         # Check host value in cfg
@@ -62,17 +62,9 @@ def process(type, backup):
     # Must be an INT
     port = config.getint("CouchPotato", "port")
     apikey = config.get("CouchPotato", "apikey")
-
-    try:
-        ssl = int(config.get("CouchPotato", "ssl"))
-    except (ConfigParser.NoOptionError, ValueError):
-        ssl = 0
-   
-    try:
-        web_root = config.get("CouchPotato", "web_root")
-    except ConfigParser.NoOptionError:
-        web_root = ""
-
+    # Must be a boolean ("1", "yes", "true", "on", "0", "no" "false" and "off" are supported)
+    ssl = config.getboolean("CouchPotato", "ssl")
+    web_root = config.get("CouchPotato", "web_root")
 
     if ssl:
         protocol = "https://"
