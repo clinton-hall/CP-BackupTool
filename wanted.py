@@ -3,7 +3,6 @@ import sys
 import urllib
 import os.path
 import ConfigParser
-import time
 import json 
 from pprint import pprint 
 import argparse
