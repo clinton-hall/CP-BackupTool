@@ -37,7 +37,7 @@ def validateConf(config, section, confFile):
         if item[0] == 'ssl' and not item[1]:
             print "No value found for '%s' in cfg %s" % (item[0], confFile)
             print "Writing default value '%s' in cfg %s"  % (default_ssl, confFile)
-            config.set(section, item[0], str(default_port))
+            config.set(section, item[0], str(default_ssl))
             writeConf(config, confFile)
 
 def writeConf(config, confFile):
