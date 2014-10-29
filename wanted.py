@@ -51,7 +51,7 @@ def process(type, backup):
     else:
         configFilename = os.path.join(os.path.dirname(sys.argv[0]), "couch.cfg")
 
-    print "Loading config from", configFilename
+    print "Loading config from:", configFilename
     with open(configFilename, "r") as conf:
         config.readfp(conf)
 
@@ -87,6 +87,7 @@ def process(type, backup):
             for imdb in imdb_list:
                 f.write(imdb +'\n')
         f.close()
+        print "Backup file completed:", backup
 
     elif type == "restore":
         with open(backup, 'r') as f:
