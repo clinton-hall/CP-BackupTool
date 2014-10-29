@@ -9,15 +9,40 @@ from pprint import pprint
 import argparse
 
 # Validate mandatory values
-def validateConf(config, section):
+def validateConf(config, section, confFile):
+    default_host = 'localhost'
+    default_port = 5050
+    default_ssl = 0
     config_list = config.items(section)
     for item in config_list:
+        # Check host value in cfg
         if item[0] == 'host' and not item[1]:
-            raise ValueError("'%s' can't be empty in cfg" % item[0])
-        elif item[0] == 'port' and not item[1]:
-            raise ValueError("'%s' can't be empty in cfg" % item[0])
-        elif item[0] == 'apikey' and not item[1]:
-            raise ValueError("'%s' can't be empty in cfg" % item[0])
+            print "No value found for '%s' in cfg %s" % (item[0], confFile)
+            print "Writing default value '%s' in cfg %s"  % (default_host, confFile)
+            config.set(section, item[0], default_host)
+            writeConf(config, confFile)
+
+        # Check port value in cfg
+        if item[0] == 'port' and not item[1]:
+            print "No value found for '%s' in cfg %s" % (item[0], confFile)
+            print "Writing default value '%s' in cfg %s"  % (default_port, confFile)
+            config.set(section, item[0], str(default_port))
+            writeConf(config, confFile)
+
+        # Check apikey value in cfg
+        if item[0] == 'apikey' and not item[1]:
+            raise ValueError("'%s' can't be empty in cfg %s" % (item[0], confFile))
+
+        # Check ssl value in cfg
+        if item[0] == 'ssl' and not item[1]:
+            print "No value found for '%s' in cfg %s" % (item[0], confFile)
+            print "Writing default value '%s' in cfg %s"  % (default_ssl, confFile)
+            config.set(section, item[0], str(default_port))
+            writeConf(config, confFile)
+
+def writeConf(config, confFile):
+    with open(confFile, "w") as conf:
+        config.write(conf)
 
 def process(type, backup):
     config = ConfigParser.ConfigParser()
@@ -31,7 +56,7 @@ def process(type, backup):
         config.readfp(conf)
 
     # Validate config
-    validateConf(config, "CouchPotato")
+    validateConf(config, "CouchPotato", configFilename)
 
     host = config.get("CouchPotato", "host")
     # Must be an INT
