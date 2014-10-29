@@ -42,6 +42,7 @@ def validateConf(config, section, confFile):
 def writeConf(config, confFile):
     with open(confFile, "w") as conf:
         config.write(conf)
+    conf.close()
 
 def process(type, backup):
     config = ConfigParser.ConfigParser()
