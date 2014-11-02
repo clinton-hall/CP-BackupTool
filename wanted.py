@@ -3,7 +3,6 @@ import sys
 import urllib
 import os.path
 import ConfigParser
-import time
 import json 
 from pprint import pprint 
 import argparse
@@ -12,7 +11,7 @@ import argparse
 def validateConf(config, section, confFile):
     default_host = 'localhost'
     default_port = 5050
-    default_ssl = 0
+    default_ssl = "off"
     config_list = config.items(section)
     for item in config_list:
         # Check host value in cfg
@@ -43,6 +42,7 @@ def validateConf(config, section, confFile):
 def writeConf(config, confFile):
     with open(confFile, "w") as conf:
         config.write(conf)
+    conf.close()
 
 def process(type, backup):
     config = ConfigParser.ConfigParser()
@@ -51,7 +51,7 @@ def process(type, backup):
     else:
         configFilename = os.path.join(os.path.dirname(sys.argv[0]), "couch.cfg")
 
-    print "Loading config from", configFilename
+    print "Loading config from:", configFilename
     with open(configFilename, "r") as conf:
         config.readfp(conf)
 
@@ -62,17 +62,9 @@ def process(type, backup):
     # Must be an INT
     port = config.getint("CouchPotato", "port")
     apikey = config.get("CouchPotato", "apikey")
-
-    try:
-        ssl = int(config.get("CouchPotato", "ssl"))
-    except (ConfigParser.NoOptionError, ValueError):
-        ssl = 0
-   
-    try:
-        web_root = config.get("CouchPotato", "web_root")
-    except ConfigParser.NoOptionError:
-        web_root = ""
-
+    # Must be a boolean ("1", "yes", "true", "on", "0", "no" "false" and "off" are supported)
+    ssl = config.getboolean("CouchPotato", "ssl")
+    web_root = config.get("CouchPotato", "web_root")
 
     if ssl:
         protocol = "https://"
@@ -91,10 +83,15 @@ def process(type, backup):
         result = json.load(urlObj)
         imdb_list = [ item["info"]["imdb"] for item in result["movies"] if 'info' in item and 'imdb' in item["info"] ]
 
-        with open(backup, 'w') as f:
-            for imdb in imdb_list:
-                f.write(imdb +'\n')
-        f.close()
+        if imdb_list:
+            print "found %s wanted movies, writing file..." % len(imdb_list)
+            with open(backup, 'w') as f:
+                for imdb in imdb_list:
+                    f.write(imdb +'\n')
+            f.close()
+            print "Backup file completed:", backup
+        else:
+            print "No wanted movies found"
 
     elif type == "restore":
         with open(backup, 'r') as f:
