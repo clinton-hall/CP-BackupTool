@@ -83,11 +83,15 @@ def process(type, backup):
         result = json.load(urlObj)
         imdb_list = [ item["info"]["imdb"] for item in result["movies"] if 'info' in item and 'imdb' in item["info"] ]
 
-        with open(backup, 'w') as f:
-            for imdb in imdb_list:
-                f.write(imdb +'\n')
-        f.close()
-        print "Backup file completed:", backup
+        if imdb_list:
+            print "found %s wanted movies, writing file..." % len(imdb_list)
+            with open(backup, 'w') as f:
+                for imdb in imdb_list:
+                    f.write(imdb +'\n')
+            f.close()
+            print "Backup file completed:", backup
+        else:
+            print "No wanted movies found"
 
     elif type == "restore":
         with open(backup, 'r') as f:
