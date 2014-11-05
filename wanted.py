@@ -44,6 +44,19 @@ def writeConf(config, confFile):
         config.write(conf)
     conf.close()
 
+def apiCall(url):
+    print "Opening URL:", url
+    try:
+       urlObj = urllib.urlopen(url)
+    except:
+        raise ValueError("Unable to open URL:", url)
+
+    result = json.load(urlObj)
+    if result:
+        return result
+    else:
+        return None
+
 def process(type, backup):
     config = ConfigParser.ConfigParser()
     if args.cfg:
@@ -73,14 +86,8 @@ def process(type, backup):
     
     if type == "backup":
         url = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.list/?status=active"
-        print "Opening URL:", url
-        try:
-            urlObj = urllib.urlopen(url)
-        except IOError, e:
-            print "Unable to open URL: ", str(e)
-            sys.exit(1)
+        result = apiCall(url)
     
-        result = json.load(urlObj)
         imdb_list = [ item["info"]["imdb"] for item in result["movies"] if 'info' in item and 'imdb' in item["info"] ]
 
         if imdb_list:
@@ -100,12 +107,7 @@ def process(type, backup):
         baseurl = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.add/?identifier="
         for imdb in imdb_list:
             url = baseurl + imdb
-            print "Opening URL:", url
-            try:
-                urlObj = urllib.urlopen(url)
-            except IOError, e:
-                print "Unable to open URL: ", str(e)
-                sys.exit(1)
+            result = apiCall(url)
 
 parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list',
                                 formatter_class=argparse.RawTextHelpFormatter)
