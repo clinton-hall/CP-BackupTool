@@ -97,7 +97,7 @@ def process(type, backup):
         with open(backup, 'r') as f:
             imdb_list = [ line.strip() for line in f ]
         f.close()
-        baseurl = protocol + host + ":" + port + web_root + "/api/" + apikey + "/" + "movie.add/?identifier="
+        baseurl = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.add/?identifier="
         for imdb in imdb_list:
             url = baseurl + imdb
             print "Opening URL:", url
