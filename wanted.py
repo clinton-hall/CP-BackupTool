@@ -49,7 +49,9 @@ def apiCall(url):
     try:
        urlObj = urllib.urlopen(url)
     except:
-        raise ValueError("Unable to open URL:", url)
+        print "Failed to open URL:", url
+        print "Caught following:"
+        raise
 
     result = json.load(urlObj)
     if result:
