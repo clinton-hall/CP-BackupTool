@@ -134,5 +134,3 @@ If restore: The file to restore from.''')
 parser.add_argument('--cfg', metavar='cfg-file', help='Specify an alternative cfg file')
 args = parser.parse_args()
 process(args.type, args.file)
-
-#BLaargh
