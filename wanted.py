@@ -89,14 +89,27 @@ def process(type, backup):
     if type == "backup":
         url = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.list/?status=active"
         result = apiCall(url)
-    
-        imdb_list = [ item["info"]["imdb"] for item in result["movies"] if 'info' in item and 'imdb' in item["info"] ]
+        backup_list = []
+        if result:
+            for item in result["movies"]:
+                movie_list = []
+                if item["identifiers"]["imdb"]:
+                    movie_list.append(item["identifiers"]["imdb"])
+                    if item["title"]: movie_list.append(item["title"])
+                    if item["profile_id"]: movie_list.append(item["profile_id"])
+                    backup_list.append(movie_list)
+                else:
+                    if item["title"]: print "No imdb ID for movie %s, skipping..." % item["title"]
+                    else: print "Unable to identify movie, skipping..."
+            print "backup list is:", backup_list
 
-        if imdb_list:
-            print "found %s wanted movies, writing file..." % len(imdb_list)
+            if backup_list:
+                print "found %s wanted movies, writing file..." % len(backup_list)
             with open(backup, 'w') as f:
-                for imdb in imdb_list:
-                    f.write(imdb +'\n')
+                for movie_list in backup_list:
+                    for movie in movie_list:
+                        json.dump(movie, f)
+                    #    f.write(movie +'\n')
             f.close()
             print "Backup file completed:", backup
         else:
@@ -121,3 +134,5 @@ If restore: The file to restore from.''')
 parser.add_argument('--cfg', metavar='cfg-file', help='Specify an alternative cfg file')
 args = parser.parse_args()
 process(args.type, args.file)
+
+#BLaargh
