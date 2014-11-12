@@ -4,7 +4,6 @@ import urllib
 import os.path
 import ConfigParser
 import json 
-from pprint import pprint 
 import argparse
 
 # Validate mandatory values
