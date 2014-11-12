@@ -94,23 +94,24 @@ def process(type, backup):
         if result['total'] != 0:
             for item in result["movies"]:
                 movie_list = []
+                # If the IMDB ID is found
                 if item["identifiers"]["imdb"]:
                     movie_list.append(item["identifiers"]["imdb"])
-                    if item["title"]: movie_list.append(item["title"])
-                    if item["profile_id"]: movie_list.append(item["profile_id"])
+                    # If the movie title is found (optional)
+                    if item["title"]:
+                        movie_list.append(item["title"])
+                    # If the profile ID is found (optional)
+                    if item["profile_id"]:
+                        movie_list.append(item["profile_id"])
+                    # Append the movie list to backup list
                     backup_list.append(movie_list)
                 else:
                     if item["title"]: print "No imdb ID for movie %s, skipping..." % item["title"]
                     else: print "Unable to identify movie, skipping..."
-            print "backup list is:", backup_list
 
-            if backup_list:
-                print "found %s wanted movies, writing file..." % len(backup_list)
+            print "found %s wanted movies, writing file..." % len(backup_list)
             with open(backup, 'w') as f:
-                for movie_list in backup_list:
-                    for movie in movie_list:
-                        json.dump(movie, f)
-                    #    f.write(movie +'\n')
+                json.dump(backup_list, f)
             f.close()
             print "Backup file completed:", backup
         else:
@@ -118,11 +119,12 @@ def process(type, backup):
 
     elif type == "restore":
         with open(backup, 'r') as f:
-            imdb_list = [ line.strip() for line in f ]
+            movie_list = json.load(f)
         f.close()
         baseurl = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.add/?identifier="
-        for imdb in imdb_list:
-            url = baseurl + imdb
+        for movie in movie_list:
+            print "IMDB ID:", movie[0]
+            url = baseurl + movie[0]
             result = apiCall(url)
 
 parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list',
