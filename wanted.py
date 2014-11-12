@@ -47,7 +47,7 @@ def writeConf(config, confFile):
 def apiCall(url):
     print "Opening URL:", url
     try:
-       urlObj = urllib.urlopen(url)
+        urlObj = urllib.urlopen(url)
     except:
         print "Failed to open URL:", url
         print "Caught following:"
