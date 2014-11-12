@@ -90,7 +90,8 @@ def process(type, backup):
         url = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.list/?status=active"
         result = apiCall(url)
         backup_list = []
-        if result:
+        # Check if backup is necessary (i.e skip if no movies found)
+        if result['total'] != 0:
             for item in result["movies"]:
                 movie_list = []
                 if item["identifiers"]["imdb"]:
