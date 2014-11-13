@@ -85,20 +85,20 @@ def process(type, backup):
     else:
         protocol = "http://"
     
+    # The base URL
+    baseurl = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/"
     if type == "backup":
-        url = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.list/?status=active"
+        api_call = "movie.list/?status=active"
+        url = baseurl + api_call
         result = apiCall(url)
         backup_list = []
         # Check if backup is necessary (i.e skip if no movies found)
-        if result['total'] != 0:
+        if result['total'] > 0:
             for item in result["movies"]:
                 movie_list = []
                 # If the IMDB ID is found
                 if item["identifiers"]["imdb"]:
                     movie_list.append(item["identifiers"]["imdb"])
-                    # If the movie title is found (optional)
-                    if item["title"]:
-                        movie_list.append(item["title"])
                     # If the profile ID is found (optional)
                     if item["profile_id"]:
                         movie_list.append(item["profile_id"])
@@ -120,10 +120,13 @@ def process(type, backup):
         with open(backup, 'r') as f:
             movie_list = json.load(f)
         f.close()
-        baseurl = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.add/?identifier="
+
         for movie in movie_list:
-            print "IMDB ID:", movie[0]
-            url = baseurl + movie[0]
+            # Add movies along with profile id (if not found or empty; default will be used)
+            if len(movie) == 1:
+                movie.append("")
+            api_call = "movie.add/?identifier=%s&profile_id=%s" %(movie[0], movie[1])
+            url = baseurl + api_call
             result = apiCall(url)
 
 parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list',
