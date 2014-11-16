@@ -4,7 +4,6 @@ import urllib
 import os.path
 import ConfigParser
 import json 
-from pprint import pprint 
 import argparse
 
 # Validate mandatory values
@@ -86,17 +85,32 @@ def process(type, backup):
     else:
         protocol = "http://"
     
+    # The base URL
+    baseurl = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/"
     if type == "backup":
-        url = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.list/?status=active"
+        api_call = "movie.list/?status=active"
+        url = baseurl + api_call
         result = apiCall(url)
-    
-        imdb_list = [ item["info"]["imdb"] for item in result["movies"] if 'info' in item and 'imdb' in item["info"] ]
+        backup_list = []
+        # Check if backup is necessary (i.e skip if no movies found)
+        if result['total'] > 0:
+            for item in result["movies"]:
+                movie_list = []
+                # If the IMDB ID is found
+                if item["identifiers"]["imdb"]:
+                    movie_list.append(item["identifiers"]["imdb"])
+                    # If the profile ID is found (optional)
+                    if item["profile_id"]:
+                        movie_list.append(item["profile_id"])
+                    # Append the movie list to backup list
+                    backup_list.append(movie_list)
+                else:
+                    if item["title"]: print "No imdb ID for movie %s, skipping..." % item["title"]
+                    else: print "Unable to identify movie, skipping..."
 
-        if imdb_list:
-            print "found %s wanted movies, writing file..." % len(imdb_list)
+            print "found %s wanted movies, writing file..." % len(backup_list)
             with open(backup, 'w') as f:
-                for imdb in imdb_list:
-                    f.write(imdb +'\n')
+                json.dump(backup_list, f)
             f.close()
             print "Backup file completed:", backup
         else:
@@ -104,11 +118,15 @@ def process(type, backup):
 
     elif type == "restore":
         with open(backup, 'r') as f:
-            imdb_list = [ line.strip() for line in f ]
+            movie_list = json.load(f)
         f.close()
-        baseurl = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/" + "movie.add/?identifier="
-        for imdb in imdb_list:
-            url = baseurl + imdb
+
+        for movie in movie_list:
+            # Add movies along with profile id (if not found or empty; default will be used)
+            if len(movie) == 1:
+                movie.append("")
+            api_call = "movie.add/?identifier=%s&profile_id=%s" %(movie[0], movie[1])
+            url = baseurl + api_call
             result = apiCall(url)
 
 parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list',
