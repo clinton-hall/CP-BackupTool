@@ -22,7 +22,7 @@ Now, should your database need to be deleted, or is otherwise lost, run this scr
 ./wanted.py --type restore /volume1/Public/backup.txt
 ```
 
-It will restore the qualities, but if you reinstalled couchpotato only the default qualties will exist. All movies that had non-default qualities should have been added with the default quality.
+It will restore the qualities, but if you reinstalled couchpotato only the default qualities will exist.
 If this is the case you'll need to recreate those and manually edit these in the wanted list.
 In case you are worry about auto-snatch with the wrong quality etc (not default) I suggest setting your downloader to "manual" to prevent auto-snatching, before running the restore. Take the downloader out of "manual" mode once you are comfortable all has been restored correctly.
 
