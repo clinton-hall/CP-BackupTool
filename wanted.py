@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import sys
 import urllib
-import os.path
+import os
 import ConfigParser
 import json 
 import argparse
+import time
 
 # Validate mandatory values
 def validateConf(config, section, confFile):
@@ -43,8 +44,9 @@ def writeConf(config, confFile):
         config.write(conf)
     conf.close()
 
-def apiCall(url):
-    print "Opening URL:", url
+def apiCall(url, verbose = True):
+    if verbose:
+        print "Opening URL:", url
     try:
         urlObj = urllib.urlopen(url)
     except:
@@ -117,6 +119,21 @@ def process(type, backup):
             print "No wanted movies found"
 
     elif type == "restore":
+        # Do a managed search prior to restoring
+        print "Doing a full managed scan..."
+        api_call = "manage.update/?full=1"
+        url = baseurl + api_call
+        result = apiCall(url)
+
+        # Check progress
+        api_call = "manage.progress"
+        url = baseurl + api_call
+        result = apiCall(url)
+        while result['progress'] != False:
+            result = apiCall(url, verbose=False)
+            time.sleep(1)
+        print "Managed scan completed"
+
         with open(backup, 'r') as f:
             movie_list = json.load(f)
         f.close()
