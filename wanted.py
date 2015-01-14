@@ -98,17 +98,18 @@ def process(type, backup):
         if result['total'] > 0:
             for item in result["movies"]:
                 movie_list = []
-                # If the IMDB ID is found
-                if item["identifiers"]["imdb"]:
+                try:
+                    # Try the current data structure
                     movie_list.append(item["identifiers"]["imdb"])
-                    # If the profile ID is found (optional)
-                    if item["profile_id"]:
-                        movie_list.append(item["profile_id"])
-                    # Append the movie list to backup list
-                    backup_list.append(movie_list)
-                else:
-                    if item["title"]: print "No imdb ID for movie %s, skipping..." % item["title"]
-                    else: print "Unable to identify movie, skipping..."
+                except:
+                    # Use old data structure for backward compatibility
+                    movie_list.append(item["info"]["imdb"])
+
+                # If the profile ID is found (optional)
+                if item["profile_id"]:
+                    movie_list.append(item["profile_id"])
+                # Append the movie list to backup list
+                backup_list.append(movie_list)
 
             print "found %s wanted movies, writing file..." % len(backup_list)
             with open(backup, 'w') as f:
