@@ -60,7 +60,13 @@ def apiCall(url, verbose = True):
     else:
         return None
 
-def process(type, backup):
+def listWanted(baseurl):
+    api_call = "movie.list/?status=active"
+    url = baseurl + api_call
+    result = apiCall(url)
+    return result
+
+def process(type, backup = None):
     config = ConfigParser.ConfigParser()
     if args.cfg:
         configFilename = args.cfg 
@@ -90,9 +96,8 @@ def process(type, backup):
     # The base URL
     baseurl = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/"
     if type == "backup":
-        api_call = "movie.list/?status=active"
-        url = baseurl + api_call
-        result = apiCall(url)
+        result = listWanted(baseurl)
+
         backup_list = []
         # Check if backup is necessary (i.e skip if no movies found)
         if result['total'] > 0:
@@ -146,14 +151,29 @@ def process(type, backup):
             api_call = "movie.add/?identifier=%s&profile_id=%s" %(movie[0], movie[1])
             url = baseurl + api_call
             result = apiCall(url)
+    elif type == "delete":
+        result = listWanted(baseurl)
+        if result['total'] > 0:
+            print "Deleting wanted movies..."
+            for item in result["movies"]:
+                print "Deleting movie '%s'" % item["title"]
+                api_call = "movie.delete/?delete_from=wanted&id=%s" % item["_id"]
+                url = baseurl + api_call
+                apiCall(url, verbose = False)
+        else:
+            print "No wanted movies to delete"
 
-parser = argparse.ArgumentParser(description='Backup/Restore Couchpotato wanted list',
+parser = argparse.ArgumentParser(description='Backup/Restore/Delete Couchpotato wanted list',
                                 formatter_class=argparse.RawTextHelpFormatter)
 # Require this option
-parser.add_argument('--type', metavar='backup/restore', choices=['backup', 'restore'],
-                    required=True, help='')
-parser.add_argument('file', help='''If backup: The file to save the wanted list to.
-If restore: The file to restore from.''')
+parser.add_argument('--type', metavar='backup/restore/delete', choices=['backup', 'restore', 'delete'],
+        required=True, help='''backup: Writes the wanted movies to file.
+restore: Adds wanted movies from file.
+delete: Delete all your wanted movies''')
+parser.add_argument('--file', help='', required=False)
 parser.add_argument('--cfg', metavar='cfg-file', help='Specify an alternative cfg file')
 args = parser.parse_args()
+if args.type == 'backup' or args.type == 'restore':
+    if not args.file:
+        parser.error('You must specify a file when using %s' % args.type)
 process(args.type, args.file)
