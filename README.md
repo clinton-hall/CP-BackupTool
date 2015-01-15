@@ -6,7 +6,7 @@ backup and restore tool for CouchPotato's wanted list.
 After cloning this repo you need to edit the couch.cfg to add your correct host, path and apikey (from CouchPotato, settings, general)
 You can also specify the path to a CFG file:
 ```
-./wanted.py --type backup --cfg /your/path/cfg /volume1/Public/backup.txt
+./wanted.py --type backup --cfg /your/path/cfg --file /volume1/Public/backup.txt
 ```
 
 ###### Backup
