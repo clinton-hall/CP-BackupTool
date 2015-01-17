@@ -8,6 +8,10 @@ You can also specify the path to a CFG file:
 ```
 ./wanted.py --type backup --cfg /your/path/cfg --file /volume1/Public/backup.txt
 ```
+Also, you can use your settings.conf from couchpotato:
+```
+./wanted.py --type backup --cfg /your/path/.couchpotato/settings.conf --file /volume1/Public/backup.txt
+```
 
 ###### Backup
 To create a backup of your wanted movies, run the script passing in the options "backup" and the full path/name of the backup file you want to create
