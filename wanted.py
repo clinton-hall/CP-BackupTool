@@ -87,6 +87,13 @@ def process(type, backup = None):
     else:
         protocol = "http://"
     
+    # Add '/' to beginning of web_root if missing
+    if web_root and not web_root[0] == '/':
+        web_root = '/' + web_root
+    # Remove '/' from end of web_root if present
+    if web_root and web_root[-1] == '/':
+        web_root = web_root[:-1]
+
     # The base URL
     baseurl = protocol + host + ":" + str(port) + web_root + "/api/" + apikey + "/"
     if type == "backup":
