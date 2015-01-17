@@ -7,37 +7,35 @@ import json
 import argparse
 import time
 
-# Validate mandatory values
-def validateConf(config, section, confFile):
-    default_host = 'localhost'
-    default_port = 5050
-    default_ssl = "off"
-    config_list = config.items(section)
-    for item in config_list:
-        # Check host value in cfg
-        if item[0] == 'host' and not item[1]:
-            print "No value found for '%s' in cfg %s" % (item[0], confFile)
-            print "Writing default value '%s' in cfg %s"  % (default_host, confFile)
-            config.set(section, item[0], default_host)
-            writeConf(config, confFile)
+# Default values that will be used if not found in CFG
+default_host = 'localhost'
+default_port = 5050
+default_ssl = False
 
-        # Check port value in cfg
-        if item[0] == 'port' and not item[1]:
-            print "No value found for '%s' in cfg %s" % (item[0], confFile)
-            print "Writing default value '%s' in cfg %s"  % (default_port, confFile)
-            config.set(section, item[0], str(default_port))
-            writeConf(config, confFile)
-
-        # Check apikey value in cfg
-        if item[0] == 'apikey' and not item[1]:
-            raise ValueError("'%s' can't be empty in cfg %s" % (item[0], confFile))
-
-        # Check ssl value in cfg
-        if item[0] == 'ssl' and not item[1]:
-            print "No value found for '%s' in cfg %s" % (item[0], confFile)
-            print "Writing default value '%s' in cfg %s"  % (default_ssl, confFile)
-            config.set(section, item[0], str(default_ssl))
-            writeConf(config, confFile)
+def validateConf(config, section, item):
+    try:
+        # Special check for ssl
+        if item == 'ssl':
+            try:
+                # Specific to CP-backuptool CFG
+                return config.getboolean(section, item)
+            except:
+                # Specific to CP settings.conf
+                if config.get(section, "ssl_key"):
+                    return True
+                else:
+                    return False
+        else:
+            return config.get(section, item)
+    except:
+        if item == 'host':
+            print "No '%s' found in config, using default: '%s'" % (item, default_host)
+            return default_host
+        elif item == 'port':
+            print "No '%s' found in config, using default: '%s'" % (item, default_port)
+            return default_port
+        elif item == 'api_key':
+            raise Exception("No API key found in configfile")
 
 def writeConf(config, confFile):
     with open(confFile, "w") as conf:
@@ -77,16 +75,12 @@ def process(type, backup = None):
     with open(configFilename, "r") as conf:
         config.readfp(conf)
 
-    # Validate config
-    validateConf(config, "CouchPotato", configFilename)
-
-    host = config.get("CouchPotato", "host")
-    # Must be an INT
-    port = config.getint("CouchPotato", "port")
-    apikey = config.get("CouchPotato", "apikey")
-    # Must be a boolean ("1", "yes", "true", "on", "0", "no" "false" and "off" are supported)
-    ssl = config.getboolean("CouchPotato", "ssl")
-    web_root = config.get("CouchPotato", "web_root")
+    sections = config.sections()
+    host = validateConf(config, sections[0], "host")
+    port = validateConf(config, sections[0], "port")
+    apikey = validateConf(config, sections[0], "api_key")
+    ssl = validateConf(config, sections[0], "ssl")
+    web_root = validateConf(config, sections[0], "url_base")
 
     if ssl:
         protocol = "https://"
