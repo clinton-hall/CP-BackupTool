@@ -103,6 +103,8 @@ def process(type, backup = None):
         # Check if backup is necessary (i.e skip if no movies found)
         if result['total'] > 0:
             for item in result["movies"]:
+                if not ("info" in item or "identifiers" in item):
+                    continue
                 movie_list = []
                 try:
                     # Try the current data structure
