@@ -154,6 +154,18 @@ def process(type, backup = None):
             api_call = "movie.add/?identifier=%s&profile_id=%s" %(movie[0], movie[1])
             url = baseurl + api_call
             result = apiCall(url)
+    elif type == "add":
+        with open(backup, 'r') as f:
+            movie_list = json.load(f)
+        f.close()
+
+        for movie in movie_list:
+            # Add movies along with profile id (if not found or empty; default will be used)
+            if len(movie) == 1:
+                movie.append("")
+            api_call = "movie.add/?identifier=%s&profile_id=%s" %(movie[0], movie[1])
+            url = baseurl + api_call
+            result = apiCall(url)
     elif type == "delete":
         result = listWanted(baseurl)
         if result['total'] > 0:
@@ -169,10 +181,11 @@ def process(type, backup = None):
 parser = argparse.ArgumentParser(description='Backup/Restore/Delete Couchpotato wanted list',
                                 formatter_class=argparse.RawTextHelpFormatter)
 # Require this option
-parser.add_argument('--type', metavar='backup/restore/delete', choices=['backup', 'restore', 'delete'],
+parser.add_argument('--type', metavar='backup/restore/delete/add', choices=['backup', 'restore', 'delete', 'add'],
         required=True, help='''backup: Writes the wanted movies to file.
 restore: Adds wanted movies from file.
-delete: Delete all your wanted movies''')
+delete: Delete all your wanted movies
+add: Adds wanted movies from file skipping manage scan.''')
 parser.add_argument('--file', help='', required=False)
 parser.add_argument('--cfg', metavar='cfg-file', help='Specify an alternative cfg file')
 args = parser.parse_args()
