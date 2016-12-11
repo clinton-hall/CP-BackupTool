@@ -35,6 +35,13 @@ This will delete all movies in your wanted list.
 ```
 ./wanted.py --type delete
 ```
+
+###### Export
+To create a backup of your existing library of movie files, run the script passing in the options "export" and the full path/name of the backup file you want to create
+```
+./wanted.py --type export --file /volume1/Public/export.txt
+```
+
 ###### More options
 To see all options for wanted.py:
 ```
