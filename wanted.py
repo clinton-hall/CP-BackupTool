@@ -64,6 +64,12 @@ def listWanted(baseurl):
     result = apiCall(url)
     return result
 
+def listDone(baseurl):
+    api_call = "movie.list/?status=done"
+    url = baseurl + api_call
+    result = apiCall(url)
+    return result
+
 def process(type, backup = None):
     config = ConfigParser.ConfigParser()
     if args.cfg:
@@ -154,6 +160,7 @@ def process(type, backup = None):
             api_call = "movie.add/?identifier=%s&profile_id=%s" %(movie[0], movie[1])
             url = baseurl + api_call
             result = apiCall(url)
+
     elif type == "add":
         with open(backup, 'r') as f:
             movie_list = json.load(f)
@@ -166,6 +173,7 @@ def process(type, backup = None):
             api_call = "movie.add/?identifier=%s&profile_id=%s" %(movie[0], movie[1])
             url = baseurl + api_call
             result = apiCall(url)
+
     elif type == "delete":
         result = listWanted(baseurl)
         if result['total'] > 0:
@@ -178,18 +186,57 @@ def process(type, backup = None):
         else:
             print "No wanted movies to delete"
 
-parser = argparse.ArgumentParser(description='Backup/Restore/Delete Couchpotato wanted list',
+    elif type == "export":
+        result = listDone(baseurl)
+        
+        export_list = []
+        # Check if export is necessary (i.e skip if no movies found)
+        if result['total'] > 0:
+            for item in result["movies"]:
+                if not ("info" in item or "identifiers" in item):
+                    continue
+                movie_list = []
+                try:
+                    # Try the current data structure
+                    movie_list.append(item["identifiers"]["imdb"])
+                except:
+                    # Use old data structure for backward compatibility
+                    movie_list.append(item["info"]["imdb"])
+                
+                # Check releases for files
+                for release in item["releases"]:
+                    if not ("files" in release):
+                        continue
+                    # Get the path of the movie file
+                    movie_list.append(release["files"]["movie"][0])
+                
+                # Append separator character (optional)
+                movie_list.append("\n")
+                
+                # Append the movie list to export list
+                export_list.append(movie_list)
+            
+            print "found %s library movies, writing file..." % len(export_list)
+            with open(backup, 'w') as f:
+                json.dump(export_list, f)
+            f.close()
+            print "Export file completed:", backup
+        else:
+            print "No library movies found"
+
+parser = argparse.ArgumentParser(description='Backup/Restore/Delete/Export Couchpotato wanted/library list',
                                 formatter_class=argparse.RawTextHelpFormatter)
 # Require this option
-parser.add_argument('--type', metavar='backup/restore/delete/add', choices=['backup', 'restore', 'delete', 'add'],
+parser.add_argument('--type', metavar='backup/restore/delete/add/export', choices=['backup', 'restore', 'delete', 'add', 'export'],
         required=True, help='''backup: Writes the wanted movies to file.
 restore: Adds wanted movies from file.
 delete: Delete all your wanted movies
-add: Adds wanted movies from file skipping manage scan.''')
+add: Adds wanted movies from file skipping manage scan.
+export: Writes the library movies to file.''')
 parser.add_argument('--file', help='', required=False)
 parser.add_argument('--cfg', metavar='cfg-file', help='Specify an alternative cfg file')
 args = parser.parse_args()
-if args.type == 'backup' or args.type == 'restore':
+if args.type == 'backup' or args.type == 'restore' or args.type == 'export':
     if not args.file:
         parser.error('You must specify a file when using %s' % args.type)
 process(args.type, args.file)
