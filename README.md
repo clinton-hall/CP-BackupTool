@@ -30,6 +30,12 @@ It will restore the qualities, but if you reinstalled couchpotato only the defau
 If this is the case you'll need to recreate those and manually edit these in the wanted list.
 In case you worry about auto-snatch with the wrong quality etc (not default) I suggest setting your downloader to "manual" to prevent auto-snatching, before running the restore. Take the downloader out of "manual" mode once you are comfortable all has been restored correctly.
 
+###### Clear
+This will delete all movies in your managed list.
+```
+./wanted.py --type clear
+```
+
 ###### Delete
 This will delete all movies in your wanted list.
 ```
