@@ -70,6 +70,12 @@ def listDone(baseurl):
     result = apiCall(url)
     return result
 
+def listLimitedDone(baseurl):
+    api_call = "movie.list/?status=manage&limit_offset=50"
+    url = baseurl + api_call
+    result = apiCall(url)
+    return result
+
 def process(type, backup = None):
     config = ConfigParser.ConfigParser()
     if args.cfg:
