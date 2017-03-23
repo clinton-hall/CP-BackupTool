@@ -180,6 +180,20 @@ def process(type, backup = None):
             url = baseurl + api_call
             result = apiCall(url)
 
+    elif type == "clear":
+        result = listLimitedDone(baseurl)
+        print "Clearing Movie Library..."
+        if not result['empty']:
+            while not result['empty']:
+                for item in result["movies"]:
+                    print "Clearing movie '%s' from Library" % item["title"]
+                    api_call = "movie.delete/?delete_from=manage&id=%s" % item["_id"]
+                    url = baseurl + api_call
+                    apiCall(url, verbose = False)
+                result = listLimitedDone(baseurl)
+        else:
+            print "No movies in Library to clear"
+
     elif type == "delete":
         result = listWanted(baseurl)
         if result['total'] > 0:
@@ -233,7 +247,7 @@ def process(type, backup = None):
 parser = argparse.ArgumentParser(description='Backup/Restore/Delete/Export Couchpotato wanted/library list',
                                 formatter_class=argparse.RawTextHelpFormatter)
 # Require this option
-parser.add_argument('--type', metavar='backup/restore/delete/add/export', choices=['backup', 'restore', 'delete', 'add', 'export'],
+parser.add_argument('--type', metavar='backup/restore/delete/add/export/clear', choices=['backup', 'restore', 'delete', 'add', 'export', 'clear'],
         required=True, help='''backup: Writes the wanted movies to file.
 restore: Adds wanted movies from file.
 delete: Delete all your wanted movies
