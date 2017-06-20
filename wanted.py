@@ -227,6 +227,8 @@ def process(type, backup = None):
                 for release in item["releases"]:
                     if not ("files" in release):
                         continue
+                    if not ("movie" in release["files"]):
+                        continue
                     # Get the path of the movie file
                     movie_list.append(release["files"]["movie"][0])
                 
