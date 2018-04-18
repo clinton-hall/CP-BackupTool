@@ -245,16 +245,59 @@ def process(type, backup = None):
             print "Export file completed:", backup
         else:
             print "No library movies found"
+    elif type == "check":
+        result = listDone(baseurl)
+        
+        export_list = []
+        # Check if export is necessary (i.e skip if no movies found)
+        if result['total'] > 0:
+            for item in result["movies"]:
+                #print "item found: %s " % json.dumps(item)
+                #print "------------------------------------------------"
+                title = item["info"]["original_title"]
+                #print "Title: %s" % title
+                
+                # Check releases for files
+                if not item["releases"]:
+                    continue
+
+                for release in item["releases"]:
+
+                    if not ("files" in release):
+                        continue
+                    if not ("movie" in release["files"]):
+                        continue
+                    # Get the path of the movie file
+                    fileondisk = os.path.isfile(release["files"]["movie"][0])
+                    if not fileondisk:
+                        if backup is None:
+                            print "====================================================="
+                            print "Title: %s" % title
+                            print "File check for file %s is not found on disk " % (release["files"]["movie"][0])
+                        else:
+                            export_list.append(release["files"]["movie"][0])
+
+            print "found %s library movies, writing file..." % len(export_list)
+            if not backup is None:
+                with open(backup, 'w') as f:
+                    json.dump(export_list, f)
+                f.close()
+                print "File check completed:", backup
+            else:
+                print "File check completed"
+        else:
+            print "No library movies found"
 
 parser = argparse.ArgumentParser(description='Backup/Restore/Delete/Export Couchpotato wanted/library list',
                                 formatter_class=argparse.RawTextHelpFormatter)
 # Require this option
-parser.add_argument('--type', metavar='backup/restore/delete/add/export/clear', choices=['backup', 'restore', 'delete', 'add', 'export', 'clear'],
+parser.add_argument('--type', metavar='backup/restore/delete/add/export/clear/check', choices=['backup', 'restore', 'delete', 'add', 'export', 'clear', 'check'],
         required=True, help='''backup: Writes the wanted movies to file.
 restore: Adds wanted movies from file.
 delete: Delete all your wanted movies
 add: Adds wanted movies from file skipping manage scan.
-export: Writes the library movies to file.''')
+export: Writes the library movies to file.
+check: Checks done movie list to filesystem''')
 parser.add_argument('--file', help='', required=False)
 parser.add_argument('--cfg', metavar='cfg-file', help='Specify an alternative cfg file')
 args = parser.parse_args()
