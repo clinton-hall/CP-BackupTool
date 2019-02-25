@@ -12,6 +12,9 @@ default_host = 'localhost'
 default_port = 5050
 default_ssl = False
 
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 def validateConf(config, section, item):
     try:
         # Special check for ssl
