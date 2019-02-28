@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 import sys
-import urllib
 import os
-import ConfigParser
+try:
+    import configparser
+    import urllib.request as urllib
+except ImportError:
+    import ConfigParser as configparser
+    import urllib
 import json 
 import argparse
 import time
@@ -32,10 +36,10 @@ def validateConf(config, section, item):
             return config.get(section, item)
     except:
         if item == 'host':
-            print "No '%s' found in config, using default: '%s'" % (item, default_host)
+            print("No '%s' found in config, using default: '%s'" % (item, default_host))
             return default_host
         elif item == 'port':
-            print "No '%s' found in config, using default: '%s'" % (item, default_port)
+            print("No '%s' found in config, using default: '%s'" % (item, default_port))
             return default_port
         elif item == 'api_key':
             raise Exception("No API key found in configfile")
@@ -47,12 +51,12 @@ def writeConf(config, confFile):
 
 def apiCall(url, verbose = True):
     if verbose:
-        print "Opening URL:", url
+        print("Opening URL:", url)
     try:
         urlObj = urllib.urlopen(url)
     except:
-        print "Failed to open URL:", url
-        print "Caught following:"
+        print("Failed to open URL:", url)
+        print("Caught following:")
         raise
 
     result = json.load(urlObj)
@@ -80,13 +84,13 @@ def listLimitedDone(baseurl):
     return result
 
 def process(type, backup = None):
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     if args.cfg:
         configFilename = args.cfg 
     else:
         configFilename = os.path.join(os.path.dirname(sys.argv[0]), "couch.cfg")
 
-    print "Loading config from:", configFilename
+    print("Loading config from:", configFilename)
     with open(configFilename, "r") as conf:
         config.readfp(conf)
 
@@ -134,17 +138,17 @@ def process(type, backup = None):
                 # Append the movie list to backup list
                 backup_list.append(movie_list)
 
-            print "found %s wanted movies, writing file..." % len(backup_list)
+            print("found %s wanted movies, writing file..." % len(backup_list))
             with open(backup, 'w') as f:
                 json.dump(backup_list, f)
             f.close()
-            print "Backup file completed:", backup
+            print("Backup file completed:", backup)
         else:
-            print "No wanted movies found"
+            print("No wanted movies found")
 
     elif type == "restore":
         # Do a managed search prior to restoring
-        print "Doing a full managed scan..."
+        print("Doing a full managed scan...")
         api_call = "manage.update/?full=1"
         url = baseurl + api_call
         result = apiCall(url)
@@ -156,7 +160,7 @@ def process(type, backup = None):
         while result['progress'] != False:
             result = apiCall(url, verbose=False)
             time.sleep(1)
-        print "Managed scan completed"
+        print("Managed scan completed")
 
         with open(backup, 'r') as f:
             movie_list = json.load(f)
@@ -185,29 +189,29 @@ def process(type, backup = None):
 
     elif type == "clear":
         result = listLimitedDone(baseurl)
-        print "Clearing Movie Library..."
+        print("Clearing Movie Library...")
         if not result['empty']:
             while not result['empty']:
                 for item in result["movies"]:
-                    print "Clearing movie '%s' from Library" % item["title"]
+                    print("Clearing movie '%s' from Library" % item["title"])
                     api_call = "movie.delete/?delete_from=manage&id=%s" % item["_id"]
                     url = baseurl + api_call
                     apiCall(url, verbose = False)
                 result = listLimitedDone(baseurl)
         else:
-            print "No movies in Library to clear"
+            print("No movies in Library to clear")
 
     elif type == "delete":
         result = listWanted(baseurl)
         if result['total'] > 0:
-            print "Deleting wanted movies..."
+            print("Deleting wanted movies...")
             for item in result["movies"]:
-                print "Deleting movie '%s'" % item["title"]
+                print("Deleting movie '%s'" % item["title"])
                 api_call = "movie.delete/?delete_from=wanted&id=%s" % item["_id"]
                 url = baseurl + api_call
                 apiCall(url, verbose = False)
         else:
-            print "No wanted movies to delete"
+            print("No wanted movies to delete")
 
     elif type == "export":
         result = listDone(baseurl)
@@ -241,13 +245,13 @@ def process(type, backup = None):
                 # Append the movie list to export list
                 export_list.append(movie_list)
             
-            print "found %s library movies, writing file..." % len(export_list)
+            print("found %s library movies, writing file..." % len(export_list))
             with open(backup, 'w') as f:
                 json.dump(export_list, f)
             f.close()
-            print "Export file completed:", backup
+            print("Export file completed:", backup)
         else:
-            print "No library movies found"
+            print("No library movies found")
     elif type == "check":
         result = listDone(baseurl)
         
@@ -274,22 +278,22 @@ def process(type, backup = None):
                     fileondisk = os.path.isfile(release["files"]["movie"][0])
                     if not fileondisk:
                         if backup is None:
-                            print "====================================================="
-                            print "Title: %s" % title
-                            print "File check for file %s is not found on disk " % (release["files"]["movie"][0])
+                            print("=====================================================")
+                            print("Title: %s" % title)
+                            print("File check for file %s is not found on disk " % (release["files"]["movie"][0]))
                         else:
                             export_list.append(release["files"]["movie"][0])
 
-            print "found %s library movies, writing file..." % len(export_list)
+            print("found %s library movies, writing file..." % len(export_list))
             if not backup is None:
                 with open(backup, 'w') as f:
                     json.dump(export_list, f)
                 f.close()
-                print "File check completed:", backup
+                print("File check completed:", backup)
             else:
-                print "File check completed"
+                print("File check completed")
         else:
-            print "No library movies found"
+            print("No library movies found")
 
 parser = argparse.ArgumentParser(description='Backup/Restore/Delete/Export Couchpotato wanted/library list',
                                 formatter_class=argparse.RawTextHelpFormatter)
